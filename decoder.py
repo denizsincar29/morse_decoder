@@ -35,6 +35,35 @@ class Morse:
             case Morse.Pause(value):
                 return value
 
+def save_durations_to_file(durations: list[Morse], filename: str):
+    """
+    Save the durations to a file
+
+    parameters:
+    durations: list of Morse instances
+    filename: str
+    """
+    # to json list. positive values are beeps, negative values are pauses
+    durations = [d.val if d.is_beep else -d.val for d in durations]
+    with open(filename, "w") as f:
+        json.dump(durations, f)
+
+def load_durations_from_file(filename: str) -> list[Morse]:
+    """
+    Load the durations from a file
+
+    parameters:
+    filename: str
+
+    returns:
+    durations: list of Morse instances
+    """
+    with open(filename, "r") as f:
+        durations = json.load(f)
+    # convert to Morse instances
+    durations = [Morse.Beep(d) if d>0 else Morse.Pause(-d) for d in durations]
+    return durations
+
 def decode(durations: list[Morse]) -> str:
     """
     Decode the morse code from the durations of beeps and pauses
@@ -180,3 +209,11 @@ class KeyDecoder:
     def __str__(self):
         return self.decoded
 
+
+# if main, bench the decoder
+if __name__ == "__main__":
+    # time it!
+    from timeit import timeit
+    durations = load_durations_from_file("durs.json")
+    time = timeit(lambda: decode(durations), number=1000)
+    print(f"Decoding time: {time:.2f} seconds")
